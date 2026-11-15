@@ -25,7 +25,7 @@ from astrbot.core.astr_agent_runtime import AstrAgentRuntime
 from astrbot.core.astr_agent_runtime.subagents.service import SubAgentService
 from astrbot.core.astr_agent_runtime.subagents.store import SubAgentStore
 from astrbot.core.astrbot_config_mgr import AstrBotConfigManager
-from astrbot.core.config.default import VERSION
+from astrbot.core.config.default import VERSION, VERSION_DISPLAY
 from astrbot.core.conversation_mgr import ConversationManager
 from astrbot.core.cron import CronJobManager
 from astrbot.core.db import BaseDatabase
@@ -151,7 +151,7 @@ class AstrBotCoreLifecycle:
         负责初始化各个组件, 包括 ProviderManager、PlatformManager、ConversationManager、PluginManager、PipelineScheduler、EventBus、AstrBotUpdater等。
         """
         # 初始化日志代理
-        logger.info("AstrBot v" + VERSION)
+        logger.info("AstrBot v" + VERSION_DISPLAY)
         if os.environ.get("TESTING", ""):
             LogManager.configure_logger(
                 logger, self.astrbot_config, override_level="DEBUG"

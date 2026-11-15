@@ -24,6 +24,7 @@ from astrbot.core.astr_agent_runtime.computer.process_sandbox import (
     get_process_sandbox_status,
 )
 from astrbot.core.config import VERSION
+from astrbot.core.config.default import VERSION_DISPLAY
 from astrbot.core.config.astrbot_config import AstrBotConfig
 from astrbot.core.core_lifecycle import AstrBotCoreLifecycle
 from astrbot.core.dashboard_assets import (
@@ -134,7 +135,7 @@ class StatService:
     async def get_version(self) -> dict:
         if is_desktop_session_auth_enabled():
             return {
-                "version": VERSION,
+                "version": VERSION_DISPLAY,
                 "dashboard_version": await get_dashboard_version(
                     self.dashboard_static_folder
                 ),
@@ -154,7 +155,7 @@ class StatService:
 
         md5_pwd_hint = is_md5_dashboard_password(password)
         return {
-            "version": VERSION,
+            "version": VERSION_DISPLAY,
             "dashboard_version": await get_dashboard_version(
                 self.dashboard_static_folder
             ),

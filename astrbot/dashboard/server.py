@@ -17,7 +17,7 @@ from hypercorn.logging import AccessLogAtoms
 from hypercorn.logging import Logger as HypercornLogger
 
 from astrbot.core import logger
-from astrbot.core.config.default import VERSION
+from astrbot.core.config.default import VERSION, VERSION_DISPLAY
 from astrbot.core.core_lifecycle import AstrBotCoreLifecycle
 from astrbot.core.dashboard_assets import resolve_dashboard_dist
 from astrbot.core.db import BaseDatabase
@@ -692,7 +692,7 @@ class AstrBotDashboard:
             webui_status = (
                 f"WebUI is NOT ready: static files are missing at {self.data_path}"
             )
-        parts = [f"\n ✨✨✨\n  AstrBot v{VERSION} {webui_status}\n\n"]
+        parts = [f"\n ✨✨✨\n  AstrBot v{VERSION_DISPLAY} {webui_status}\n\n"]
         parts.append(f"   ➜  Local: {scheme}://localhost:{port}\n")
         for ip in ip_addr:
             parts.append(f"   ➜  Network: {scheme}://{ip}:{port}\n")

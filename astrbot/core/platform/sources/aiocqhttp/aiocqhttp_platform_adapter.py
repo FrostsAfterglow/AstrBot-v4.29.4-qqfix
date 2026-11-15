@@ -244,11 +244,6 @@ class AiocqhttpAdapter(Platform):
             return component
 
         # 优先使用协议端返回的公开 url
-        new_url = ret.get("url")
-        if isinstance(new_url, str) and new_url.startswith("http"):
-            component.url = new_url
-            return component
-
         file_value = ret.get("file")
         if not isinstance(file_value, str) or not file_value:
             return component
@@ -272,7 +267,51 @@ class AiocqhttpAdapter(Platform):
             component.path = path
             component.url = ""
             logger.debug(f"[QQ图片] 已本地化: {path}")
+            return component
+
+        new_url = ret.get("url")
+        if isinstance(new_url, str) and new_url.startswith("http"):
+            component.url = new_url
         return component
+
+    async def _try_qq_file_local(self, file_id, name=""):
+        """让协议端把 QQ 文件落到本地，返回可读路径；失败返回空串。
+
+        QQ 群文件链接同样带 rkey，容易过期（HTTP 400）。优先用协议端的
+        ``get_file`` 拿到本地缓存/ base64，避免再去请求过期链接。
+        """
+        for ref in (file_id, name):
+            if not ref:
+                continue
+            try:
+                ret = await self.bot.call_action(action="get_file", file_id=ref)
+            except Exception as exc:  # noqa: BLE001
+                logger.debug(f"[QQ文件] get_file({ref}) 失败: {exc}")
+                continue
+            if not isinstance(ret, dict):
+                continue
+            value = ret.get("file")
+            if not isinstance(value, str) or not value:
+                continue
+            if value.startswith("base64://"):
+                try:
+                    import base64
+                    import tempfile
+
+                    raw = base64.b64decode(value[len("base64://") :])
+                    suffix = os.path.splitext(str(name or ""))[1] or ".bin"
+                    fd, path = tempfile.mkstemp(suffix=suffix)
+                    with os.fdopen(fd, "wb") as fp:
+                        fp.write(raw)
+                    return path
+                except Exception as exc:  # noqa: BLE001
+                    logger.debug(f"[QQ文件] base64 落盘失败: {exc}")
+                    continue
+            if value.startswith("file://"):
+                value = value[len("file://") :]
+            if os.path.exists(value):
+                return value
+        return ""
 
     async def _convert_handle_message_event(
         self,
@@ -369,7 +408,13 @@ class AiocqhttpAdapter(Platform):
                                     or m["data"].get("file", "")
                                     or m["data"].get("file_name", "")
                                 )
-                                a = File(name=file_name, url=file_url)
+                                local_path = await self._try_qq_file_local(
+                                    m["data"].get("file_id"), file_name
+                                )
+                                if local_path:
+                                    a = File(name=file_name, file=local_path)
+                                else:
+                                    a = File(name=file_name, url=file_url)
                                 abm.message.append(a)
                             else:
                                 logger.error(f"获取文件失败: {ret}")

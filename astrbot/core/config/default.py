@@ -36,6 +36,8 @@ def get_local_permission_defaults(system: str | None = None) -> dict:
 
 
 VERSION = __version__
+# 冰霜特更版显示名（仅用于展示，VERSION 保持 PEP 440 兼容）
+VERSION_DISPLAY = "4.29.5冰霜特更版"
 
 DB_PATH = os.path.join(get_astrbot_data_path(), "data_v4.db")
 PERSONAL_WECHAT_CONFIG_METADATA = {
